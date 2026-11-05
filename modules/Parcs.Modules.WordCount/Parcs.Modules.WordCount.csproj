@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- provided by the daemon/host at runtime; 10.1.0 comes from the local feed in parcs8/sdk -->
+    <PackageReference Include="Parcs.Net" Version="10.1.0">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- compiled in, not referenced: the module stays a single assembly for the daemon loader -->
+    <Compile Include="../../src/WordCount.Core/*.cs" LinkBase="Core" />
+  </ItemGroup>
+
+</Project>

@@ -21,3 +21,6 @@ image_*.png
 input.txt
 
 .DS_Store
+
+# report build intermediates (the final PDF is committed)
+report/build/

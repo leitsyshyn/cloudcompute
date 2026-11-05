@@ -1,0 +1,23 @@
+# upstream parcs8 checkout (fetched by scripts/fetch-parcs8.sh at a pinned commit)
+third_party/
+
+# local runtime state: kubeconfig, shared storage, generated inputs, caches
+.local/
+data/
+
+# .NET build output
+bin/
+obj/
+*.user
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# course materials (kept locally, not part of the lab code)
+Task_1_2_Cloud_Computing_0925*.pdf
+image_*.png
+input.txt
+
+.DS_Store

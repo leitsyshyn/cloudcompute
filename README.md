@@ -1,17 +1,21 @@
 # PARCS word count (Cloud Computing, lab 1, variant 4.1)
 
 Parallel word-frequency counting on [parcs8](https://github.com/alexeybogusevich/parcs8)
-(PARCS on .NET 10 and Kubernetes), with a sequential baseline that runs the same counting code.
+(PARCS on .NET 10 and Kubernetes), deployed on Google Kubernetes Engine with a master node and
+four worker nodes, compared with a sequential baseline that runs the same counting code.
 
 - **Algorithm:**
   - The main module splits the input file into N contiguous byte ranges, one per PARCS point.
   - Each worker reads **only its own range** from the shared storage and counts the words that *start* in it.
   - Workers send back their partial counts, and the main module merges them.
-  - Word semantics match the RPP lab (C++ `wf-benchmark`): a word is a maximal run of ASCII letters or digits, lowercased.
+  - A word is a maximal run of ASCII letters or digits, lowercased.
 - **Timing:**
   - Each job starts its N points once.
-  - It then runs warmup rounds and measured rounds over the same points.
-  - Point start-up (`SetupMs`) is reported separately from the per-round time.
+  - It then runs one warmup round and five measured rounds over the same points.
+  - Point start-up is reported separately from the per-round time.
+
+Report: [report/Звіт_ЛР1_Лейцишин.pdf](report/Звіт_ЛР1_Лейцишин.pdf) (short version:
+[report/Звіт_ЛР1_Лейцишин_короткий.pdf](report/Звіт_ЛР1_Лейцишин_короткий.pdf)).
 
 ## Layout
 
@@ -19,69 +23,48 @@ Parallel word-frequency counting on [parcs8](https://github.com/alexeybogusevich
 src/WordCount.Core/              shared counting code (ranges, boundary rule, merge, output format)
 modules/Parcs.Modules.WordCount/ PARCS module: MainModule (split/dispatch/merge), WorkerModule
 tools/WordCount.Seq/             sequential baseline (same core, one thread)
-docker/parcs8.Dockerfile         builds parcs8 daemon/host/portal from source
-docker/wordcount-seq.Dockerfile  sequential baseline image
-deploy/base/                     parcs8 manifest shared by both environments (kustomize base)
-deploy/local/                    kind cluster (master + worker-1..4) + overlay (hostPath storage, NodePorts)
-deploy/gcp/                      GKE overlay (NFS-Ganesha storage class) + NFS chart values
-deploy/jobs/                     dataset generation Job
-scripts/                         build, local cluster up/down, REST client, datagen, validation, benchmark, plots
-scripts/gcp/                     Google Cloud: tools, login, project, images, cluster, deploy, datasets, benchmark, teardown
-docs/gcp-runbook.md              how to run it on GKE
-third_party/parcs8/              upstream sources (git-ignored, fetched at a pinned commit + patches/)
-patches/                         local patches to parcs8, applied by scripts/fetch-parcs8.sh
-.local/                          git-ignored runtime state: kubeconfig, storage, builds, results
+docker/                          parcs8.Dockerfile (daemon/host/portal from source),
+                                 wordcount-seq.Dockerfile, cloudbuild.yaml
+patches/                         fixes applied to the parcs8 sources before building
+deploy/base, deploy/gcp          Kubernetes manifests (kustomize), NFS-Ganesha Helm values
+deploy/jobs/                     dataset generation and sequential baseline Jobs
+scripts/datagen.py               deterministic dataset generator
+results/gcp/                     measurements: raw and summary CSV, per-job reports, figures
+report/                          report sources (Markdown -> Typst) and PDFs
 ```
 
-## Run locally
-
-Requirements: Docker Desktop (8 GB RAM), `kind`, `kubectl`, `python3`. No .NET SDK is needed,
-because everything compiles inside containers.
+## parcs8 sources
 
 ```bash
-scripts/fetch-parcs8.sh                 # upstream sources at the pinned commit + local patches
-scripts/build-images.sh                 # parcs8/{sdk,daemon,host,portal}:local
-scripts/build-module.sh                 # WordCount module + wordcount/seq:local
-scripts/local-up.sh                     # kind cluster + parcs8 (static mode, 4 daemons)
-export KUBECONFIG=$PWD/.local/kubeconfig
-
-# datasets go to the shared storage (mounted into every node); same generator as the RPP lab
-python3 scripts/datagen.py --out-dir .local/storage/datasets --edge-cases natural:10 highcard:10 natural:100
-
-MID=$(python3 scripts/parcs_client.py upload-module .local/build/module)
-python3 scripts/parcs_client.py run --module-id $MID --points 4 \
-    --input datasets/<input>.txt --repetitions 5 --warmup 1 --out .local/runs/demo
-python3 scripts/validate.py --module-id $MID --datasets .local/storage/datasets --reference <dir>
-python3 scripts/bench.py --module-id $MID --datasets <a>.txt,<b>.txt --out .local/results/local
-python3 -m venv .local/venv && .local/venv/bin/pip install matplotlib
-.local/venv/bin/python scripts/plot.py .local/results/local/summary.csv --title "local"
-
-scripts/local-down.sh
+git clone https://github.com/alexeybogusevich/parcs8 third_party/parcs8
+git -C third_party/parcs8 checkout d35d29f948cb1849a070967e681bc0df7f25d779
+git -C third_party/parcs8 apply ../../patches/0001-optional-elasticsearch-logging.patch
 ```
 
-- Host API (Swagger): http://127.0.0.1:5080/swagger
-- Portal: http://127.0.0.1:5081
-- Nodes and pods: `kubectl get nodes -L parcs-role,parcs-worker` and `kubectl get pods -o wide`
+## Build and deploy
 
-## Run on Google Cloud
+Images are built from `docker/parcs8.Dockerfile` (targets `daemon`, `host`, `portal`; build
+context: the parcs8 source tree) and `docker/wordcount-seq.Dockerfile` (context: this repository),
+for example with Cloud Build and `docker/cloudbuild.yaml`. The module is built with
+`dotnet publish modules/Parcs.Modules.WordCount -c Release`. It needs `Parcs.Net` 10.1.0, which
+is packed from `third_party/parcs8/src/Parcs.Net` because nuget.org does not have it.
 
-See [docs/gcp-runbook.md](docs/gcp-runbook.md): `scripts/gcp/00-tools.sh` … `06-benchmark.sh`,
-then `99-teardown.sh`. It uses the same images, module and tooling; only the cluster, storage
-(NFS-Ganesha) and image registry differ.
+The full command sequence (project, images, cluster with master + worker-1..4, NFS storage,
+parcs8, datasets, job submission through the REST API, sequential baseline, teardown) is in
+section 7.2 of the report.
 
-## Problems found in upstream parcs8 and how they are fixed here
+## Problems found in upstream parcs8 and how they are fixed
 
 | Problem | Fix |
 |---|---|
-| All projects reference NuGet `Parcs.Net` 10.1.0, which is not published (nuget.org stops at 10.0.0), so `dotnet restore` fails | `docker/parcs8.Dockerfile` packs `src/Parcs.Net` into a local feed before restoring |
-| `dotnet pack` of Parcs.Net fails with NU5026, because the csproj sets `GeneratePackageOnBuild=True` | pack with `-p:GeneratePackageOnBuild=false` |
-| Published images (`oleksiibohusevych/*`) are linux/amd64 only | build from source: native arm64 locally, amd64 for the cloud |
-| `kube/deployment.local.yaml`: the PVC selectors (`app: parcs`) match no PV labels, and the Elasticsearch claim name does not exist, so pods stay Pending | own manifests (`deploy/`): shared job storage as an explicit RWX volume per environment, emptyDir for Postgres |
-| .NET 8+ ASP.NET images listen on 8080, while the manifest's Services target port 80 | `ASPNETCORE_URLS=http://+:80` |
+| All projects reference NuGet `Parcs.Net` 10.1.0, which is not published (nuget.org stops at 10.0.0) | `docker/parcs8.Dockerfile` packs `src/Parcs.Net` into a local feed before restoring |
+| `dotnet pack` of Parcs.Net fails with NU5026 (`GeneratePackageOnBuild=True`) | pack with `-p:GeneratePackageOnBuild=false` |
+| The GCP manifest points at images in the author's project; the published images lack the fixes below | images built from source into our own Artifact Registry |
+| Upstream manifests: PVC selectors match no PV, a missing Elasticsearch claim, elastic-mode (Pub/Sub, KEDA) assumptions | own manifests (`deploy/`) for the static mode with an explicit ReadWriteMany volume |
+| .NET 8+ ASP.NET images listen on 8080 while the Services target port 80 | `ASPNETCORE_URLS=http://+:80` |
 | `postgres:latest` is now 18, which changed the data directory layout | pinned `postgres:16` |
-| Elasticsearch is a hard dependency used only for logging: the portal crashes at startup if it is not up yet, and it costs ~1 GB of RAM | `patches/0001-optional-elasticsearch-logging.patch`: an empty `Elasticsearch__BaseUrl` turns the Elasticsearch sink and health check off, logs go to the console (`kubectl logs`); Elasticsearch and Kibana are removed from the manifest |
-| The host migrates its database once at startup without retrying: if Postgres is not ready yet, it stays alive but never listens | startup/liveness/readiness probes on `/health`, so Kubernetes restarts it until the migration succeeds |
-| The manifest includes the AI-agent MCP server, whose image is not published | dropped (not needed) |
-| On GKE there is no ReadWriteMany storage by default (Filestore has a 1 TB minimum, ~$200/month) | NFS-Ganesha Helm chart on the master node (as in the upstream GCP guide), storage class `parcs-rwx` |
-| The old NFS server image `registry.k8s.io/volume-nfs:0.8` is a Docker schema-1 image, which current containerd no longer pulls | not used; NFS-Ganesha instead |
-| The Job API requires at least one uploaded input file, and uploads over Kestrel's default 30,000,000-byte body limit fail with HTTP 400 ("Request body too large") | datasets are staged once on the shared storage, and the job takes an `InputPath` argument (a placeholder file is uploaded) |
+| Elasticsearch is a hard dependency used only for logging (the portal crashes without it) | `patches/0001`: an empty `Elasticsearch__BaseUrl` disables it; logs go to the console |
+| The host migrates its database once at startup without retrying | startup/liveness/readiness probes on `/health` |
+| The Job API needs an uploaded input file and rejects bodies over 30,000,000 bytes | datasets live on the shared storage; the job takes an `InputPath` argument |
+| No ReadWriteMany storage on GKE by default; the claim must fit the NFS disk | NFS-Ganesha Helm chart 1.8.0 on the master node, 10 GiB claim |
+| A single worker or the host runs out of memory on a vocabulary of 6.9M distinct words | daemon limit 2 GiB (same as the baseline), host 5 GiB, merge into the largest partial result |

@@ -2,7 +2,7 @@
 # scripts/datagen.py (byte-identical to the RPP generator):
 #   kubectl create configmap datagen --from-file=scripts/datagen.py
 #   kubectl apply -f deploy/jobs/datagen-job.yaml
-# The args line lists the datasets (profile:size_mb); scripts/gcp/05-datasets.sh may replace it.
+# The args line lists the datasets (profile:size_mb).
 apiVersion: batch/v1
 kind: Job
 metadata:

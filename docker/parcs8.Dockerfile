@@ -1,14 +1,14 @@
 # syntax=docker/dockerfile:1
 #
 # Builds the parcs8 images (daemon, host, portal) from source.
-# Build context: third_party/parcs8 (see scripts/build-images.sh).
+# Build context: the parcs8 source tree (third_party/parcs8 with patches/ applied).
 #
 # Why not the upstream Dockerfiles:
 #   * every project references the NuGet package Parcs.Net 10.1.0, which is not published
 #     on nuget.org (latest there is 10.0.0), so `dotnet restore` fails. We pack it from
 #     src/Parcs.Net into a local feed first.
-#   * the published images on Docker Hub are linux/amd64 only; building from source gives
-#     native arm64 images for local runs and amd64 images for the cloud.
+#   * the published images cannot carry the fixes in patches/, and the upstream GCP manifest
+#     points at images in the author's own project.
 
 ARG DOTNET_VERSION=10.0
 

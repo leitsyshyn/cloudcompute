@@ -1,7 +1,6 @@
 # parcs8, static scaling mode: 1 master node (host, portal, postgres) + worker nodes with one
-# daemon each. Shared by the overlays deploy/local (kind) and deploy/gcp (GKE), which add the
-# shared job storage and how the services are reached. Images are the local tags; the gcp
-# overlay rewrites them to Artifact Registry.
+# daemon each. The deploy/gcp overlay adds the shared job storage class and the Artifact
+# Registry image names.
 #
 # Derived from upstream kube/deployment.local.yaml, with these fixes:
 #   * PVCs had `selector: app=parcs` while the PVs carry no labels, and the Elasticsearch
@@ -20,7 +19,7 @@
 #
 # Job storage: one ReadWriteMany claim mounted by the host and every daemon at
 # /var/lib/storage (modules, job input/output, datasets). Its storage class comes from the
-# overlay (local: hostPath shared by all kind nodes; gcp: NFS-Ganesha).
+# overlay (GKE: NFS-Ganesha).
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:

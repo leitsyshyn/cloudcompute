@@ -13,4 +13,4 @@ the same started points; median reported.
 - highcard_100mb needed two infrastructure changes during the run, both in deploy/base:
   daemon memory 1Gi -> 2Gi (one worker holding ~6.6M distinct words: OutOfMemoryException),
   host memory -> 5Gi (receiving and merging the partial counts).
-- summary.csv / raw.csv rebuilt from reports/*.json (bench.py --rebuild).
+- summary.csv / raw.csv are computed from reports/*.json (one report per job).

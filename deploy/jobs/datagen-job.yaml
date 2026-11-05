@@ -1,0 +1,32 @@
+# Generates the benchmark datasets inside the cluster, on the shared job storage, with
+# scripts/datagen.py (byte-identical to the RPP generator). Applied by scripts/gcp/05-datasets.sh
+# after: kubectl create configmap datagen --from-file=scripts/datagen.py
+# DATASET_SPECS is substituted by the script.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: datagen
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      nodeSelector: {parcs-role: master}
+      tolerations: [{key: node-role.kubernetes.io/control-plane, operator: Exists, effect: NoSchedule}]
+      containers:
+        - name: datagen
+          image: python:3.12-slim
+          command: ["python", "-I", "/scripts/datagen.py", "--out-dir", "/var/lib/storage/datasets",
+                    "--edge-cases", "--skip-existing"]
+          args: DATASET_SPECS
+          resources:
+            requests: {cpu: 250m, memory: 128Mi}
+            limits: {cpu: "1", memory: 512Mi}
+          volumeMounts:
+            - {name: storage, mountPath: /var/lib/storage}
+            - {name: scripts, mountPath: /scripts}
+      volumes:
+        - name: storage
+          persistentVolumeClaim: {claimName: parcs-storage}
+        - name: scripts
+          configMap: {name: datagen}

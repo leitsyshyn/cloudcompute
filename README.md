@@ -20,8 +20,14 @@ src/WordCount.Core/              shared counting code (ranges, boundary rule, me
 modules/Parcs.Modules.WordCount/ PARCS module: MainModule (split/dispatch/merge), WorkerModule
 tools/WordCount.Seq/             sequential baseline (same core, one thread)
 docker/parcs8.Dockerfile         builds parcs8 daemon/host/portal from source
-deploy/local/                    kind cluster (master + worker-1..4) and parcs8 manifest
-scripts/                         build, cluster up/down, REST client, validation, benchmark, plots
+docker/wordcount-seq.Dockerfile  sequential baseline image
+deploy/base/                     parcs8 manifest shared by both environments (kustomize base)
+deploy/local/                    kind cluster (master + worker-1..4) + overlay (hostPath storage, NodePorts)
+deploy/gcp/                      GKE overlay (NFS-Ganesha storage class) + NFS chart values
+deploy/jobs/                     dataset generation Job
+scripts/                         build, local cluster up/down, REST client, datagen, validation, benchmark, plots
+scripts/gcp/                     Google Cloud: tools, login, project, images, cluster, deploy, datasets, benchmark, teardown
+docs/gcp-runbook.md              how to run it on GKE
 third_party/parcs8/              upstream sources (git-ignored, fetched at a pinned commit + patches/)
 patches/                         local patches to parcs8, applied by scripts/fetch-parcs8.sh
 .local/                          git-ignored runtime state: kubeconfig, storage, builds, results
@@ -39,8 +45,8 @@ scripts/build-module.sh                 # WordCount module + wordcount/seq:local
 scripts/local-up.sh                     # kind cluster + parcs8 (static mode, 4 daemons)
 export KUBECONFIG=$PWD/.local/kubeconfig
 
-# datasets go to the shared storage (mounted into every node)
-mkdir -p .local/storage/datasets && cp <input>.txt .local/storage/datasets/
+# datasets go to the shared storage (mounted into every node); same generator as the RPP lab
+python3 scripts/datagen.py --out-dir .local/storage/datasets --edge-cases natural:10 highcard:10 natural:100
 
 MID=$(python3 scripts/parcs_client.py upload-module .local/build/module)
 python3 scripts/parcs_client.py run --module-id $MID --points 4 \
@@ -57,6 +63,12 @@ scripts/local-down.sh
 - Portal: http://127.0.0.1:5081
 - Nodes and pods: `kubectl get nodes -L parcs-role,parcs-worker` and `kubectl get pods -o wide`
 
+## Run on Google Cloud
+
+See [docs/gcp-runbook.md](docs/gcp-runbook.md): `scripts/gcp/00-tools.sh` … `06-benchmark.sh`,
+then `99-teardown.sh`. It uses the same images, module and tooling; only the cluster, storage
+(NFS-Ganesha) and image registry differ.
+
 ## Problems found in upstream parcs8 and how they are fixed here
 
 | Problem | Fix |
@@ -64,10 +76,12 @@ scripts/local-down.sh
 | All projects reference NuGet `Parcs.Net` 10.1.0, which is not published (nuget.org stops at 10.0.0), so `dotnet restore` fails | `docker/parcs8.Dockerfile` packs `src/Parcs.Net` into a local feed before restoring |
 | `dotnet pack` of Parcs.Net fails with NU5026, because the csproj sets `GeneratePackageOnBuild=True` | pack with `-p:GeneratePackageOnBuild=false` |
 | Published images (`oleksiibohusevych/*`) are linux/amd64 only | build from source: native arm64 locally, amd64 for the cloud |
-| `kube/deployment.local.yaml`: the PVC selectors (`app: parcs`) match no PV labels, and the Elasticsearch claim name does not exist, so pods stay Pending | own manifest: shared job storage as an explicit RWX PV, emptyDir for Postgres and Elasticsearch |
+| `kube/deployment.local.yaml`: the PVC selectors (`app: parcs`) match no PV labels, and the Elasticsearch claim name does not exist, so pods stay Pending | own manifests (`deploy/`): shared job storage as an explicit RWX volume per environment, emptyDir for Postgres |
 | .NET 8+ ASP.NET images listen on 8080, while the manifest's Services target port 80 | `ASPNETCORE_URLS=http://+:80` |
 | `postgres:latest` is now 18, which changed the data directory layout | pinned `postgres:16` |
 | Elasticsearch is a hard dependency used only for logging: the portal crashes at startup if it is not up yet, and it costs ~1 GB of RAM | `patches/0001-optional-elasticsearch-logging.patch`: an empty `Elasticsearch__BaseUrl` turns the Elasticsearch sink and health check off, logs go to the console (`kubectl logs`); Elasticsearch and Kibana are removed from the manifest |
 | The host migrates its database once at startup without retrying: if Postgres is not ready yet, it stays alive but never listens | startup/liveness/readiness probes on `/health`, so Kubernetes restarts it until the migration succeeds |
 | The manifest includes the AI-agent MCP server, whose image is not published | dropped (not needed) |
+| On GKE there is no ReadWriteMany storage by default (Filestore has a 1 TB minimum, ~$200/month) | NFS-Ganesha Helm chart on the master node (as in the upstream GCP guide), storage class `parcs-rwx` |
+| The old NFS server image `registry.k8s.io/volume-nfs:0.8` is a Docker schema-1 image, which current containerd no longer pulls | not used; NFS-Ganesha instead |
 | The Job API requires at least one uploaded input file, and uploads over Kestrel's default 30,000,000-byte body limit fail with HTTP 400 ("Request body too large") | datasets are staged once on the shared storage, and the job takes an `InputPath` argument (a placeholder file is uploaded) |

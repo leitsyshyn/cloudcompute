@@ -1,0 +1,9 @@
+# docker build context = repo root (docker/wordcount-seq.Dockerfile); keep it small
+.local
+.git
+third_party
+data
+**/bin
+**/obj
+*.pdf
+*.png

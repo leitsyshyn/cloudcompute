@@ -1,0 +1,218 @@
+# parcs8, static scaling mode: 1 master node (host, portal, postgres) + worker nodes with one
+# daemon each. Shared by the overlays deploy/local (kind) and deploy/gcp (GKE), which add the
+# shared job storage and how the services are reached. Images are the local tags; the gcp
+# overlay rewrites them to Artifact Registry.
+#
+# Derived from upstream kube/deployment.local.yaml, with these fixes:
+#   * PVCs had `selector: app=parcs` while the PVs carry no labels, and the Elasticsearch
+#     Deployment referenced a claim that did not exist -> pods stuck Pending. Postgres and
+#     Elasticsearch now use emptyDir; only the job storage is a (shared) volume.
+#   * .NET 8+ ASP.NET images listen on 8080 by default; the Services target port 80, so
+#     ASPNETCORE_URLS is set explicitly.
+#   * postgres:latest is now 18, whose data-dir layout changed; pinned to 16.
+#   * Elasticsearch and Kibana are dropped: with patches/0001 an empty Elasticsearch__BaseUrl
+#     turns the Elasticsearch log sink off (logs go to the console / kubectl logs). Upstream the
+#     portal crashes at startup without Elasticsearch, and it costs ~1 GB of RAM.
+#   * The AI-agent MCP server (image not published) is dropped.
+#   * Scaling__Mode=Static explicitly; daemons get a guaranteed 1 CPU each and are spread one
+#     per worker node, the master node runs host/portal/db.
+#   * Host gets health probes (its startup DB migration does not retry).
+#
+# Job storage: one ReadWriteMany claim mounted by the host and every daemon at
+# /var/lib/storage (modules, job input/output, datasets). Its storage class comes from the
+# overlay (local: hostPath shared by all kind nodes; gcp: NFS-Ganesha).
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: parcs-storage
+spec:
+  accessModes: [ReadWriteMany]
+  resources: {requests: {storage: 20Gi}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: parcs-daemon-headless
+spec:
+  clusterIP: None
+  selector: {app: parcs-daemon}
+  ports: [{name: daemon, port: 1111, targetPort: 1111}]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: parcs-daemon
+spec:
+  replicas: 4
+  # one daemon per worker node (anti-affinity) leaves no room for a surge pod during a
+  # rolling update, so replace them all at once
+  strategy: {type: Recreate}
+  selector: {matchLabels: {app: parcs-daemon}}
+  template:
+    metadata:
+      labels: {app: parcs-daemon}
+    spec:
+      nodeSelector: {parcs-role: worker}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector: {matchLabels: {app: parcs-daemon}}
+              topologyKey: kubernetes.io/hostname
+      containers:
+        - name: parcs-daemon
+          image: parcs8/daemon:local
+          imagePullPolicy: IfNotPresent
+          ports: [{containerPort: 1111}]
+          resources:
+            requests: {cpu: "1", memory: 512Mi}
+            limits: {cpu: "1", memory: 1Gi}
+          env:
+            - {name: Hosting__Environment, value: Kubernetes}
+            - {name: Kubernetes__NamespaceName, value: default}
+            - {name: Kubernetes__DaemonsHeadlessServiceName, value: parcs-daemon-headless}
+            - {name: Scaling__Mode, value: Static}
+            - {name: HostApi__Uri, value: parcs-hostapi-internal}
+            - {name: Elasticsearch__BaseUrl, value: ""}   # Elasticsearch off (patches/0001), console logs
+          volumeMounts: [{name: storage, mountPath: /var/lib/storage}]
+      volumes:
+        - name: storage
+          persistentVolumeClaim: {claimName: parcs-storage}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: parcs-hostapi
+spec:
+  selector: {app: parcs-hostapi}
+  ports: [{name: http, port: 80, targetPort: 80}]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: parcs-hostapi-internal
+spec:
+  selector: {app: parcs-hostapi}
+  ports: [{name: http, port: 80, targetPort: 80}]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: parcs-hostapi
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: parcs-hostapi}}
+  template:
+    metadata:
+      labels: {app: parcs-hostapi}
+    spec:
+      nodeSelector: {parcs-role: master}
+      tolerations: [{key: node-role.kubernetes.io/control-plane, operator: Exists, effect: NoSchedule}]
+      containers:
+        - name: parcs-hostapi
+          image: parcs8/host:local
+          imagePullPolicy: IfNotPresent
+          ports: [{containerPort: 80}]
+          # The host migrates its database at startup and does not retry: if Postgres is not up
+          # yet the process stays alive without ever listening. The probes make Kubernetes
+          # restart it until the migration succeeds.
+          startupProbe:
+            httpGet: {path: /health, port: 80}
+            periodSeconds: 3
+            failureThreshold: 20
+          livenessProbe:
+            httpGet: {path: /health, port: 80}
+            periodSeconds: 10
+          readinessProbe:
+            httpGet: {path: /health, port: 80}
+            periodSeconds: 5
+          resources:
+            requests: {cpu: "1", memory: 512Mi}
+            limits: {cpu: "1", memory: 1536Mi}
+          env:
+            - {name: ASPNETCORE_URLS, value: "http://+:80"}
+            - {name: Hosting__Environment, value: Kubernetes}
+            - {name: Kubernetes__NamespaceName, value: default}
+            - {name: Kubernetes__DaemonsHeadlessServiceName, value: parcs-daemon-headless}
+            - {name: Scaling__Mode, value: Static}
+            - {name: Database__HostName, value: parcs-database}
+            - {name: Database__DatabaseName, value: parcs}
+            - {name: Database__Username, value: parcs_admin}
+            - {name: Database__Password, value: parcs_local_pw}
+            - {name: Database__Port, value: "5432"}
+            - {name: Elasticsearch__BaseUrl, value: ""}   # Elasticsearch off (patches/0001), console logs
+          volumeMounts: [{name: storage, mountPath: /var/lib/storage}]
+      volumes:
+        - name: storage
+          persistentVolumeClaim: {claimName: parcs-storage}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: parcs-portal
+spec:
+  selector: {app: parcs-portal}
+  ports: [{name: http, port: 80, targetPort: 80}]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: parcs-portal
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: parcs-portal}}
+  template:
+    metadata:
+      labels: {app: parcs-portal}
+    spec:
+      nodeSelector: {parcs-role: master}
+      tolerations: [{key: node-role.kubernetes.io/control-plane, operator: Exists, effect: NoSchedule}]
+      containers:
+        - name: parcs-portal
+          image: parcs8/portal:local
+          imagePullPolicy: IfNotPresent
+          ports: [{containerPort: 80}]
+          resources:
+            requests: {cpu: 100m, memory: 128Mi}
+            limits: {cpu: 500m, memory: 512Mi}
+          env:
+            - {name: ASPNETCORE_URLS, value: "http://+:80"}
+            - {name: Host__Uri, value: parcs-hostapi-internal}
+            - {name: Portal__Uri, value: parcs-portal}
+            - {name: Portal__SignalrUri, value: parcs-portal}
+            - {name: Elasticsearch__BaseUrl, value: ""}   # Elasticsearch off (patches/0001), console logs
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: parcs-database
+spec:
+  selector: {app: parcs-database}
+  ports: [{name: postgres, port: 5432, targetPort: 5432}]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: parcs-database
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: parcs-database}}
+  template:
+    metadata:
+      labels: {app: parcs-database}
+    spec:
+      nodeSelector: {parcs-role: master}
+      tolerations: [{key: node-role.kubernetes.io/control-plane, operator: Exists, effect: NoSchedule}]
+      containers:
+        - name: parcs-database
+          image: postgres:16
+          env:
+            - {name: POSTGRES_USER, value: parcs_admin}
+            - {name: POSTGRES_PASSWORD, value: parcs_local_pw}
+            - {name: POSTGRES_DB, value: parcs}
+          ports: [{containerPort: 5432}]
+          resources:
+            requests: {cpu: 100m, memory: 128Mi}
+            limits: {cpu: 500m, memory: 512Mi}
+          volumeMounts: [{name: data, mountPath: /var/lib/postgresql/data}]
+      volumes:
+        - {name: data, emptyDir: {}}

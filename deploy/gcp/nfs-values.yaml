@@ -1,0 +1,16 @@
+# Values for the nfs-server-provisioner Helm chart (kubernetes-sigs NFS-Ganesha), version 1.8.0.
+# Userspace NFS server on the master node, backed by one persistent disk; provides the
+# ReadWriteMany storage class `parcs-rwx` for the shared job storage. Same approach as the
+# upstream parcs8 GCP guide (docs/gcp-deployment-guide.md, section 6), which avoids Filestore's
+# 1 TB minimum.
+persistence:
+  enabled: true
+  size: 20Gi          # datasets (~2 GB) + modules + job outputs
+storageClass:
+  name: parcs-rwx
+  defaultClass: false
+  reclaimPolicy: Delete
+nodeSelector:
+  parcs-role: master
+resources:
+  requests: {cpu: 100m, memory: 256Mi}

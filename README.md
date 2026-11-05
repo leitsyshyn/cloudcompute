@@ -22,7 +22,8 @@ tools/WordCount.Seq/             sequential baseline (same core, one thread)
 docker/parcs8.Dockerfile         builds parcs8 daemon/host/portal from source
 deploy/local/                    kind cluster (master + worker-1..4) and parcs8 manifest
 scripts/                         build, cluster up/down, REST client, validation, benchmark, plots
-third_party/parcs8/              upstream sources (git-ignored, fetched at a pinned commit)
+third_party/parcs8/              upstream sources (git-ignored, fetched at a pinned commit + patches/)
+patches/                         local patches to parcs8, applied by scripts/fetch-parcs8.sh
 .local/                          git-ignored runtime state: kubeconfig, storage, builds, results
 ```
 
@@ -32,12 +33,11 @@ Requirements: Docker Desktop (8 GB RAM), `kind`, `kubectl`, `python3`. No .NET S
 because everything compiles inside containers.
 
 ```bash
-scripts/fetch-parcs8.sh                 # upstream sources at the pinned commit
+scripts/fetch-parcs8.sh                 # upstream sources at the pinned commit + local patches
 scripts/build-images.sh                 # parcs8/{sdk,daemon,host,portal}:local
 scripts/build-module.sh                 # WordCount module + wordcount/seq:local
 scripts/local-up.sh                     # kind cluster + parcs8 (static mode, 4 daemons)
 export KUBECONFIG=$PWD/.local/kubeconfig
-kind load docker-image --name parcs wordcount/seq:local
 
 # datasets go to the shared storage (mounted into every node)
 mkdir -p .local/storage/datasets && cp <input>.txt .local/storage/datasets/
@@ -67,6 +67,7 @@ scripts/local-down.sh
 | `kube/deployment.local.yaml`: the PVC selectors (`app: parcs`) match no PV labels, and the Elasticsearch claim name does not exist, so pods stay Pending | own manifest: shared job storage as an explicit RWX PV, emptyDir for Postgres and Elasticsearch |
 | .NET 8+ ASP.NET images listen on 8080, while the manifest's Services target port 80 | `ASPNETCORE_URLS=http://+:80` |
 | `postgres:latest` is now 18, which changed the data directory layout | pinned `postgres:16` |
-| The portal crashes at startup if Elasticsearch is not up yet (it creates index templates) | `local-up.sh` restarts host, daemons and portal once Elasticsearch answers |
+| Elasticsearch is a hard dependency used only for logging: the portal crashes at startup if it is not up yet, and it costs ~1 GB of RAM | `patches/0001-optional-elasticsearch-logging.patch`: an empty `Elasticsearch__BaseUrl` turns the Elasticsearch sink and health check off, logs go to the console (`kubectl logs`); Elasticsearch and Kibana are removed from the manifest |
+| The host migrates its database once at startup without retrying: if Postgres is not ready yet, it stays alive but never listens | startup/liveness/readiness probes on `/health`, so Kubernetes restarts it until the migration succeeds |
 | The manifest includes the AI-agent MCP server, whose image is not published | dropped (not needed) |
 | The Job API requires at least one uploaded input file, and uploads over Kestrel's default 30,000,000-byte body limit fail with HTTP 400 ("Request body too large") | datasets are staged once on the shared storage, and the job takes an `InputPath` argument (a placeholder file is uploaded) |

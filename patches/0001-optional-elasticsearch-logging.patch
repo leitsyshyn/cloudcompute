@@ -1,0 +1,114 @@
+diff --git a/src/Parcs.Daemon/Extensions/ILoggingBuilderExtensions.cs b/src/Parcs.Daemon/Extensions/ILoggingBuilderExtensions.cs
+index e6d7858..3b5d86c 100644
+--- a/src/Parcs.Daemon/Extensions/ILoggingBuilderExtensions.cs
++++ b/src/Parcs.Daemon/Extensions/ILoggingBuilderExtensions.cs
+@@ -16,12 +16,20 @@ namespace Parcs.Daemon.Extensions
+                 .GetSection(ElasticsearchConfiguration.SectionName)
+                 .Get<ElasticsearchConfiguration>();
+ 
+-            loggingBuilder.AddSerilog(new LoggerConfiguration()
+-                .WriteTo.Elasticsearch([new Uri(elasticsearchConfiguration.BaseUrl)], opts =>
++            // An empty Elasticsearch:BaseUrl disables the Elasticsearch sink; the sinks from the
++            // Serilog configuration section (console) stay.
++            var baseUrl = elasticsearchConfiguration?.BaseUrl;
++            var loggerConfiguration = new LoggerConfiguration();
++            if (!string.IsNullOrWhiteSpace(baseUrl))
++            {
++                loggerConfiguration.WriteTo.Elasticsearch([new Uri(baseUrl)], opts =>
+                 {
+                     opts.DataStream = new DataStreamName("parcs-daemon");
+                     opts.BootstrapMethod = BootstrapMethod.Failure;
+-                })
++                });
++            }
++
++            loggingBuilder.AddSerilog(loggerConfiguration
+                 .ReadFrom.Configuration(configuration)
+                 .Enrich.FromLogContext()
+                 .CreateLogger());
+diff --git a/src/Parcs.Host/Extensions/ConfigureHostBuilderExtensions.cs b/src/Parcs.Host/Extensions/ConfigureHostBuilderExtensions.cs
+index e476d59..dcd16c6 100644
+--- a/src/Parcs.Host/Extensions/ConfigureHostBuilderExtensions.cs
++++ b/src/Parcs.Host/Extensions/ConfigureHostBuilderExtensions.cs
+@@ -14,13 +14,22 @@ namespace Parcs.Host.Extensions
+                 .GetSection(ElasticsearchConfiguration.SectionName)
+                 .Get<ElasticsearchConfiguration>();
+ 
+-            hostBuilder.UseSerilog((hostContext, logging) => logging
+-                .WriteTo.Elasticsearch([new Uri(elasticsearchConfiguration.BaseUrl)], options =>
++            // An empty Elasticsearch:BaseUrl disables the Elasticsearch sink; the sinks from the
++            // Serilog configuration section (console) stay.
++            var baseUrl = elasticsearchConfiguration?.BaseUrl;
++
++            hostBuilder.UseSerilog((hostContext, logging) =>
++            {
++                if (!string.IsNullOrWhiteSpace(baseUrl))
+                 {
+-                    options.DataStream = new DataStreamName("parcs-portal");
+-                    options.BootstrapMethod = BootstrapMethod.Silent;
+-                })
+-                .ReadFrom.Configuration(hostContext.Configuration));
++                    logging.WriteTo.Elasticsearch([new Uri(baseUrl)], options =>
++                    {
++                        options.DataStream = new DataStreamName("parcs-portal");
++                        options.BootstrapMethod = BootstrapMethod.Silent;
++                    });
++                }
++                logging.ReadFrom.Configuration(hostContext.Configuration);
++            });
+         }
+     }
+ }
+\ No newline at end of file
+diff --git a/src/Parcs.Portal/Extensions/ConfigureHostBuilderExtensions.cs b/src/Parcs.Portal/Extensions/ConfigureHostBuilderExtensions.cs
+index 8e53c06..b81723f 100644
+--- a/src/Parcs.Portal/Extensions/ConfigureHostBuilderExtensions.cs
++++ b/src/Parcs.Portal/Extensions/ConfigureHostBuilderExtensions.cs
+@@ -14,13 +14,22 @@ namespace Parcs.Portal.Extensions
+                 .GetSection(ElasticsearchConfiguration.SectionName)
+                 .Get<ElasticsearchConfiguration>();
+ 
+-            hostBuilder.UseSerilog((hostContext, logging) => logging
+-                .WriteTo.Elasticsearch([new Uri(elasticsearchConfiguration.BaseUrl)], options =>
++            // An empty Elasticsearch:BaseUrl disables the Elasticsearch sink; the sinks from the
++            // Serilog configuration section (console) stay.
++            var baseUrl = elasticsearchConfiguration?.BaseUrl;
++
++            hostBuilder.UseSerilog((hostContext, logging) =>
++            {
++                if (!string.IsNullOrWhiteSpace(baseUrl))
+                 {
+-                    options.DataStream = new DataStreamName("parcs-portal");
+-                    options.BootstrapMethod = BootstrapMethod.Failure;
+-                })
+-                .ReadFrom.Configuration(hostContext.Configuration));
++                    logging.WriteTo.Elasticsearch([new Uri(baseUrl)], options =>
++                    {
++                        options.DataStream = new DataStreamName("parcs-portal");
++                        options.BootstrapMethod = BootstrapMethod.Failure;
++                    });
++                }
++                logging.ReadFrom.Configuration(hostContext.Configuration);
++            });
+         }
+     }
+ }
+\ No newline at end of file
+diff --git a/src/Parcs.Portal/Extensions/IServiceCollectionExtensions.cs b/src/Parcs.Portal/Extensions/IServiceCollectionExtensions.cs
+index 8ca92b5..a9d96c1 100644
+--- a/src/Parcs.Portal/Extensions/IServiceCollectionExtensions.cs
++++ b/src/Parcs.Portal/Extensions/IServiceCollectionExtensions.cs
+@@ -30,8 +30,11 @@ namespace Parcs.Portal.Extensions
+                 .GetSection(ElasticsearchConfiguration.SectionName)
+                 .Get<ElasticsearchConfiguration>();
+ 
+-            services.AddHealthChecks()
+-                .AddElasticsearch(elasticsearchConfiguration.BaseUrl, "elasticsearch");
++            var healthChecks = services.AddHealthChecks();
++            if (!string.IsNullOrWhiteSpace(elasticsearchConfiguration?.BaseUrl))
++            {
++                healthChecks.AddElasticsearch(elasticsearchConfiguration.BaseUrl, "elasticsearch");
++            }
+ 
+             return services;
+         }

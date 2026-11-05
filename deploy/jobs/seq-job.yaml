@@ -1,0 +1,26 @@
+# Sequential baseline (tools/WordCount.Seq) on worker-1 with the same CPU limit as a daemon.
+# The dataset path and rounds are the arguments; prints the timing report to its log:
+#   kubectl apply -f deploy/jobs/seq-job.yaml && kubectl logs -f job/wordcount-seq
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: wordcount-seq
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      nodeSelector: {parcs-worker: worker-1}
+      containers:
+        - name: seq
+          image: europe-central2-docker.pkg.dev/parcs-wordcount-tl/parcs/seq:v1
+          args: ["/var/lib/storage/datasets/natural_1000mb.txt", "--repetitions", "5", "--warmup", "1"]
+          # limit = 1 CPU, the same as a daemon; the request is lower only so that it schedules
+          # next to the (idle during this run) daemon on a 2-vCPU node
+          resources:
+            requests: {cpu: 250m, memory: 256Mi}
+            limits: {cpu: "1", memory: 2Gi}
+          volumeMounts: [{name: storage, mountPath: /var/lib/storage}]
+      volumes:
+        - name: storage
+          persistentVolumeClaim: {claimName: parcs-storage}

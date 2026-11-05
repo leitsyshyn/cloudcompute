@@ -1,10 +1,13 @@
-# GKE. Used through the generated overlay in .local/gcp/overlay (scripts/gcp/04-deploy.sh),
-# which adds the Artifact Registry image names:
-#   images: [{name: parcs8/daemon, newName: <region>-docker.pkg.dev/<project>/parcs/daemon, newTag: <tag>}, ...]
+# GKE: kubectl apply -k deploy/gcp
+# Images from Artifact Registry of the lab project (another project: change the paths below).
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ../base
+images:
+  - {name: parcs8/daemon, newName: europe-central2-docker.pkg.dev/parcs-wordcount-tl/parcs/daemon, newTag: v1}
+  - {name: parcs8/host, newName: europe-central2-docker.pkg.dev/parcs-wordcount-tl/parcs/host, newTag: v1}
+  - {name: parcs8/portal, newName: europe-central2-docker.pkg.dev/parcs-wordcount-tl/parcs/portal, newTag: v1}
 patches:
   # job storage: RWX volume from the NFS-Ganesha provisioner (storage class created by its
   # Helm chart, see scripts/gcp/04-deploy.sh and deploy/gcp/nfs-values.yaml)

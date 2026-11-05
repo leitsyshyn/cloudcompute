@@ -1,7 +1,8 @@
 # Generates the benchmark datasets inside the cluster, on the shared job storage, with
-# scripts/datagen.py (byte-identical to the RPP generator). Applied by scripts/gcp/05-datasets.sh
-# after: kubectl create configmap datagen --from-file=scripts/datagen.py
-# DATASET_SPECS is substituted by the script.
+# scripts/datagen.py (byte-identical to the RPP generator):
+#   kubectl create configmap datagen --from-file=scripts/datagen.py
+#   kubectl apply -f deploy/jobs/datagen-job.yaml
+# The args line lists the datasets (profile:size_mb); scripts/gcp/05-datasets.sh may replace it.
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -19,7 +20,7 @@ spec:
           image: python:3.12-slim
           command: ["python", "-I", "/scripts/datagen.py", "--out-dir", "/var/lib/storage/datasets",
                     "--edge-cases", "--skip-existing"]
-          args: DATASET_SPECS
+          args: ["natural:10", "lowcard:10", "highcard:10", "boundary:10", "natural:100", "natural:500", "natural:1000", "highcard:100"]
           resources:
             requests: {cpu: 250m, memory: 128Mi}
             limits: {cpu: "1", memory: 512Mi}

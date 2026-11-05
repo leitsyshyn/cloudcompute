@@ -1,0 +1,27 @@
+# Cloud Build: the four images of the lab, built natively on amd64 and pushed to Artifact Registry.
+# Build context layout: parcs8/ (parcs8 sources + docker/parcs8.Dockerfile), wordcount/ (src, tools,
+# docker/wordcount-seq.Dockerfile). Substitutions: _REGISTRY (Artifact Registry path), _TAG.
+steps:
+  - id: daemon
+    name: gcr.io/cloud-builders/docker
+    env: [DOCKER_BUILDKIT=1]
+    args: [build, -f, parcs8/parcs8.Dockerfile, --target, daemon, -t, "${_REGISTRY}/daemon:${_TAG}", parcs8]
+  - id: host
+    name: gcr.io/cloud-builders/docker
+    env: [DOCKER_BUILDKIT=1]
+    args: [build, -f, parcs8/parcs8.Dockerfile, --target, host, -t, "${_REGISTRY}/host:${_TAG}", parcs8]
+  - id: portal
+    name: gcr.io/cloud-builders/docker
+    env: [DOCKER_BUILDKIT=1]
+    args: [build, -f, parcs8/parcs8.Dockerfile, --target, portal, -t, "${_REGISTRY}/portal:${_TAG}", parcs8]
+  - id: seq
+    name: gcr.io/cloud-builders/docker
+    env: [DOCKER_BUILDKIT=1]
+    waitFor: ["-"]
+    args: [build, -f, wordcount/wordcount-seq.Dockerfile, -t, "${_REGISTRY}/seq:${_TAG}", wordcount]
+images:
+  - "${_REGISTRY}/daemon:${_TAG}"
+  - "${_REGISTRY}/host:${_TAG}"
+  - "${_REGISTRY}/portal:${_TAG}"
+  - "${_REGISTRY}/seq:${_TAG}"
+timeout: 2400s

@@ -63,9 +63,11 @@ spec:
           image: parcs8/daemon:local
           imagePullPolicy: IfNotPresent
           ports: [{containerPort: 1111}]
+          # 2Gi, the same as the sequential baseline job: with few points and a large vocabulary
+          # (highcard) one worker holds millions of distinct words (1Gi -> OutOfMemoryException).
           resources:
             requests: {cpu: "1", memory: 512Mi}
-            limits: {cpu: "1", memory: 1Gi}
+            limits: {cpu: "1", memory: 2Gi}
           env:
             - {name: Hosting__Environment, value: Kubernetes}
             - {name: Kubernetes__NamespaceName, value: default}
@@ -100,6 +102,8 @@ metadata:
   name: parcs-hostapi
 spec:
   replicas: 1
+  # the master node has no spare CPU for a second host pod during a rolling update
+  strategy: {type: Recreate}
   selector: {matchLabels: {app: parcs-hostapi}}
   template:
     metadata:
@@ -125,9 +129,11 @@ spec:
           readinessProbe:
             httpGet: {path: /health, port: 80}
             periodSeconds: 5
+          # The main module runs here: it receives every partial count (JSON) and merges them.
+          # With millions of distinct words (highcard 100 MB: ~6.6M) that needs several GB.
           resources:
             requests: {cpu: "1", memory: 512Mi}
-            limits: {cpu: "1", memory: 1536Mi}
+            limits: {cpu: "1", memory: 5Gi}
           env:
             - {name: ASPNETCORE_URLS, value: "http://+:80"}
             - {name: Hosting__Environment, value: Kubernetes}

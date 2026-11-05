@@ -1,0 +1,136 @@
+{
+  "Method": "sequential",
+  "InputPath": "/var/lib/storage/datasets/natural_100mb.txt",
+  "InputBytes": 104857930,
+  "Points": 1,
+  "SetupMs": 0,
+  "FinalizeMs": 0.0006,
+  "Rounds": [
+    {
+      "Round": 0,
+      "Warmup": true,
+      "Points": 1,
+      "DispatchAndMapMs": 1467.9845,
+      "MergeMs": 0,
+      "TotalMs": 1467.9845,
+      "Words": 13792415,
+      "UniqueWords": 96,
+      "Workers": [
+        {
+          "Worker": "wordcount-seq-919509136-qpp2z",
+          "Begin": 0,
+          "End": 104857930,
+          "BytesRead": 104857930,
+          "Words": 13792415,
+          "UniqueWords": 96,
+          "ScanMs": 1467.9845
+        }
+      ]
+    },
+    {
+      "Round": 1,
+      "Warmup": false,
+      "Points": 1,
+      "DispatchAndMapMs": 1325.8491,
+      "MergeMs": 0,
+      "TotalMs": 1325.8491,
+      "Words": 13792415,
+      "UniqueWords": 96,
+      "Workers": [
+        {
+          "Worker": "wordcount-seq-919509136-qpp2z",
+          "Begin": 0,
+          "End": 104857930,
+          "BytesRead": 104857930,
+          "Words": 13792415,
+          "UniqueWords": 96,
+          "ScanMs": 1325.8491
+        }
+      ]
+    },
+    {
+      "Round": 2,
+      "Warmup": false,
+      "Points": 1,
+      "DispatchAndMapMs": 1375.9877,
+      "MergeMs": 0,
+      "TotalMs": 1375.9877,
+      "Words": 13792415,
+      "UniqueWords": 96,
+      "Workers": [
+        {
+          "Worker": "wordcount-seq-919509136-qpp2z",
+          "Begin": 0,
+          "End": 104857930,
+          "BytesRead": 104857930,
+          "Words": 13792415,
+          "UniqueWords": 96,
+          "ScanMs": 1375.9877
+        }
+      ]
+    },
+    {
+      "Round": 3,
+      "Warmup": false,
+      "Points": 1,
+      "DispatchAndMapMs": 1338.6949,
+      "MergeMs": 0,
+      "TotalMs": 1338.6949,
+      "Words": 13792415,
+      "UniqueWords": 96,
+      "Workers": [
+        {
+          "Worker": "wordcount-seq-919509136-qpp2z",
+          "Begin": 0,
+          "End": 104857930,
+          "BytesRead": 104857930,
+          "Words": 13792415,
+          "UniqueWords": 96,
+          "ScanMs": 1338.6949
+        }
+      ]
+    },
+    {
+      "Round": 4,
+      "Warmup": false,
+      "Points": 1,
+      "DispatchAndMapMs": 1372.6701,
+      "MergeMs": 0,
+      "TotalMs": 1372.6701,
+      "Words": 13792415,
+      "UniqueWords": 96,
+      "Workers": [
+        {
+          "Worker": "wordcount-seq-919509136-qpp2z",
+          "Begin": 0,
+          "End": 104857930,
+          "BytesRead": 104857930,
+          "Words": 13792415,
+          "UniqueWords": 96,
+          "ScanMs": 1372.6701
+        }
+      ]
+    },
+    {
+      "Round": 5,
+      "Warmup": false,
+      "Points": 1,
+      "DispatchAndMapMs": 1354.8841,
+      "MergeMs": 0,
+      "TotalMs": 1354.8841,
+      "Words": 13792415,
+      "UniqueWords": 96,
+      "Workers": [
+        {
+          "Worker": "wordcount-seq-919509136-qpp2z",
+          "Begin": 0,
+          "End": 104857930,
+          "BytesRead": 104857930,
+          "Words": 13792415,
+          "UniqueWords": 96,
+          "ScanMs": 1354.8841
+        }
+      ]
+    }
+  ]
+}

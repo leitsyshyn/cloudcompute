@@ -1,0 +1,10 @@
+boundary_10mb    N=1:ok  N=2:ok  N=3:ok  N=4:ok
+edge_delims      N=1:ok  N=2:ok  N=3:ok  N=4:ok
+edge_empty       N=1:ok  N=2:ok  N=3:ok  N=4:ok
+edge_oneword     N=1:ok  N=2:ok  N=3:ok  N=4:ok
+edge_tiny        N=1:ok  N=2:ok  N=3:ok  N=4:ok
+highcard_10mb    N=1:ok  N=2:ok  N=3:ok  N=4:ok
+lowcard_10mb     N=1:ok  N=2:ok  N=3:ok  N=4:ok
+natural_100mb    N=1:ok  N=2:ok  N=3:ok  N=4:ok
+natural_10mb     N=1:ok  N=2:ok  N=3:ok  N=4:ok
+all outputs match the reference

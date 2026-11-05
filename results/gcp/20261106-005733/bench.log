@@ -1,0 +1,16 @@
+natural_100mb.txt sequential: [1326, 1376, 1339, 1373, 1355] ms
+natural_100mb.txt parcs N=1: [1340, 1401, 1358, 1361, 1460] ms (setup 6 ms)
+natural_100mb.txt parcs N=2: [805, 722, 703, 744, 756] ms (setup 5 ms)
+natural_100mb.txt parcs N=3: [486, 488, 485, 477, 484] ms (setup 9 ms)
+natural_100mb.txt parcs N=4: [416, 406, 427, 425, 392] ms (setup 12 ms)
+natural_500mb.txt sequential: [6826, 6781, 6795, 6867, 6844] ms
+natural_500mb.txt parcs N=1: [8165, 6627, 6524, 6389, 6455] ms (setup 7 ms)
+natural_500mb.txt parcs N=2: [3646, 3651, 3616, 3588, 3583] ms (setup 5 ms)
+natural_500mb.txt parcs N=3: [2468, 2460, 2426, 2446, 2512] ms (setup 10 ms)
+natural_500mb.txt parcs N=4: [1781, 1827, 1884, 1820, 1793] ms (setup 9 ms)
+natural_1000mb.txt sequential: [13539, 13494, 13664, 13667, 13689] ms
+natural_1000mb.txt parcs N=1: [14085, 13818, 13924, 13838, 13982] ms (setup 5 ms)
+natural_1000mb.txt parcs N=2: [7017, 6984, 6924, 7006, 7231] ms (setup 5 ms)
+natural_1000mb.txt parcs N=3: [6409, 4885, 4731, 4697, 4744] ms (setup 9 ms)
+natural_1000mb.txt parcs N=4: [3522, 3545, 3513, 3572, 3513] ms (setup 10 ms)
+highcard_100mb.txt sequential: [3631, 3977, 3744, 3336, 4176] ms

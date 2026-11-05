@@ -1,0 +1,136 @@
+{
+  "Method": "sequential",
+  "InputPath": "/var/lib/storage/datasets/highcard_100mb.txt",
+  "InputBytes": 104858361,
+  "Points": 1,
+  "SetupMs": 0,
+  "FinalizeMs": 0.0004,
+  "Rounds": [
+    {
+      "Round": 0,
+      "Warmup": true,
+      "Points": 1,
+      "DispatchAndMapMs": 6206.6146,
+      "MergeMs": 0,
+      "TotalMs": 6206.6146,
+      "Words": 7825276,
+      "UniqueWords": 6885696,
+      "Workers": [
+        {
+          "Worker": "wordcount-seq-919960013-rtmvr",
+          "Begin": 0,
+          "End": 104858361,
+          "BytesRead": 104858361,
+          "Words": 7825276,
+          "UniqueWords": 6885696,
+          "ScanMs": 6206.6146
+        }
+      ]
+    },
+    {
+      "Round": 1,
+      "Warmup": false,
+      "Points": 1,
+      "DispatchAndMapMs": 3631.2937,
+      "MergeMs": 0,
+      "TotalMs": 3631.2937,
+      "Words": 7825276,
+      "UniqueWords": 6885696,
+      "Workers": [
+        {
+          "Worker": "wordcount-seq-919960013-rtmvr",
+          "Begin": 0,
+          "End": 104858361,
+          "BytesRead": 104858361,
+          "Words": 7825276,
+          "UniqueWords": 6885696,
+          "ScanMs": 3631.2937
+        }
+      ]
+    },
+    {
+      "Round": 2,
+      "Warmup": false,
+      "Points": 1,
+      "DispatchAndMapMs": 3976.7687,
+      "MergeMs": 0,
+      "TotalMs": 3976.7687,
+      "Words": 7825276,
+      "UniqueWords": 6885696,
+      "Workers": [
+        {
+          "Worker": "wordcount-seq-919960013-rtmvr",
+          "Begin": 0,
+          "End": 104858361,
+          "BytesRead": 104858361,
+          "Words": 7825276,
+          "UniqueWords": 6885696,
+          "ScanMs": 3976.7687
+        }
+      ]
+    },
+    {
+      "Round": 3,
+      "Warmup": false,
+      "Points": 1,
+      "DispatchAndMapMs": 3743.8269,
+      "MergeMs": 0,
+      "TotalMs": 3743.8269,
+      "Words": 7825276,
+      "UniqueWords": 6885696,
+      "Workers": [
+        {
+          "Worker": "wordcount-seq-919960013-rtmvr",
+          "Begin": 0,
+          "End": 104858361,
+          "BytesRead": 104858361,
+          "Words": 7825276,
+          "UniqueWords": 6885696,
+          "ScanMs": 3743.8269
+        }
+      ]
+    },
+    {
+      "Round": 4,
+      "Warmup": false,
+      "Points": 1,
+      "DispatchAndMapMs": 3335.8573,
+      "MergeMs": 0,
+      "TotalMs": 3335.8573,
+      "Words": 7825276,
+      "UniqueWords": 6885696,
+      "Workers": [
+        {
+          "Worker": "wordcount-seq-919960013-rtmvr",
+          "Begin": 0,
+          "End": 104858361,
+          "BytesRead": 104858361,
+          "Words": 7825276,
+          "UniqueWords": 6885696,
+          "ScanMs": 3335.8573
+        }
+      ]
+    },
+    {
+      "Round": 5,
+      "Warmup": false,
+      "Points": 1,
+      "DispatchAndMapMs": 4176.2682,
+      "MergeMs": 0,
+      "TotalMs": 4176.2682,
+      "Words": 7825276,
+      "UniqueWords": 6885696,
+      "Workers": [
+        {
+          "Worker": "wordcount-seq-919960013-rtmvr",
+          "Begin": 0,
+          "End": 104858361,
+          "BytesRead": 104858361,
+          "Words": 7825276,
+          "UniqueWords": 6885696,
+          "ScanMs": 4176.2682
+        }
+      ]
+    }
+  ]
+}

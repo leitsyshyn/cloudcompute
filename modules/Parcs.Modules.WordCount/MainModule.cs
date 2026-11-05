@@ -56,10 +56,14 @@ public sealed class MainModule : IModule
             var results = await Task.WhenAll(channels.Select(c => c.ReadObjectAsync<WorkResult>()));
             var mapMs = roundClock.Elapsed.TotalMilliseconds;
 
-            total = WordCounting.NewCounts();
-            foreach (var result in results)
+            // Merge into the largest partial result instead of a fresh dictionary: with a large
+            // vocabulary (millions of distinct words) a second full-size copy is what runs the
+            // host out of memory, and with one point no merge is needed at all.
+            int largest = Array.FindIndex(results, r => r.Counts.Count == results.Max(x => x.Counts.Count));
+            total = results[largest].Counts;
+            for (int i = 0; i < results.Length; i++)
             {
-                WordCounting.MergeInto(total, result.Counts);
+                if (i != largest) WordCounting.MergeInto(total, results[i].Counts);
             }
             roundClock.Stop();
 

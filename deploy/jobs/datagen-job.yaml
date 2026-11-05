@@ -11,8 +11,9 @@ spec:
   template:
     spec:
       restartPolicy: Never
-      nodeSelector: {parcs-role: master}
-      tolerations: [{key: node-role.kubernetes.io/control-plane, operator: Exists, effect: NoSchedule}]
+      # on a worker: the master node's CPU is fully requested by host/portal/db/NFS. The job
+      # runs once, before any measurement, while the daemons are idle.
+      nodeSelector: {parcs-role: worker}
       containers:
         - name: datagen
           image: python:3.12-slim

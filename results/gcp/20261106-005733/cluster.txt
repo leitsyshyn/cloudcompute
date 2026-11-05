@@ -1,0 +1,27 @@
+# kubectl get nodes
+NAME                                   STATUS   ROLES    AGE   VERSION               INTERNAL-IP   EXTERNAL-IP      OS-IMAGE                             KERNEL-VERSION      CONTAINER-RUNTIME    PARCS-ROLE   PARCS-WORKER
+gke-parcs-default-pool-f7062829-bg6j   Ready    <none>   20m   v1.36.4-gke.2046003   10.186.0.3    34.116.213.195   Container-Optimized OS from Google   6.12.105+ (amd64)   containerd://2.2.7   master       
+gke-parcs-workers-18a616b2-899p        Ready    <none>   19m   v1.36.4-gke.2046003   10.186.0.5    34.116.137.187   Container-Optimized OS from Google   6.12.105+ (amd64)   containerd://2.2.7   worker       worker-1
+gke-parcs-workers-18a616b2-cjlv        Ready    <none>   19m   v1.36.4-gke.2046003   10.186.0.4    34.118.123.204   Container-Optimized OS from Google   6.12.105+ (amd64)   containerd://2.2.7   worker       worker-2
+gke-parcs-workers-18a616b2-lgfn        Ready    <none>   19m   v1.36.4-gke.2046003   10.186.0.6    34.158.234.188   Container-Optimized OS from Google   6.12.105+ (amd64)   containerd://2.2.7   worker       worker-3
+gke-parcs-workers-18a616b2-pk74        Ready    <none>   19m   v1.36.4-gke.2046003   10.186.0.7    34.116.135.66    Container-Optimized OS from Google   6.12.105+ (amd64)   containerd://2.2.7   worker       worker-4
+
+# kubectl get pods
+NAME                                  READY   STATUS      RESTARTS   AGE     IP          NODE                                   NOMINATED NODE   READINESS GATES
+datagen-q95mk                         0/1     Completed   0          9m18s   10.8.3.5    gke-parcs-workers-18a616b2-pk74        <none>           <none>
+nfs-server-nfs-server-provisioner-0   1/1     Running     0          19m     10.8.0.13   gke-parcs-default-pool-f7062829-bg6j   <none>           <none>
+parcs-daemon-5f7d6df8db-f75kh         1/1     Running     0          15m     10.8.4.4    gke-parcs-workers-18a616b2-lgfn        <none>           <none>
+parcs-daemon-5f7d6df8db-l96mh         1/1     Running     0          15m     10.8.1.4    gke-parcs-workers-18a616b2-cjlv        <none>           <none>
+parcs-daemon-5f7d6df8db-stqkz         1/1     Running     0          15m     10.8.3.4    gke-parcs-workers-18a616b2-pk74        <none>           <none>
+parcs-daemon-5f7d6df8db-x6czp         1/1     Running     0          15m     10.8.2.5    gke-parcs-workers-18a616b2-899p        <none>           <none>
+parcs-database-85d4b7ccd8-dnvvp       1/1     Running     0          15m     10.8.0.16   gke-parcs-default-pool-f7062829-bg6j   <none>           <none>
+parcs-hostapi-774d557f4-hhmkb         1/1     Running     0          15m     10.8.0.18   gke-parcs-default-pool-f7062829-bg6j   <none>           <none>
+parcs-portal-578b9b5667-8mtgb         1/1     Running     0          15m     10.8.0.17   gke-parcs-default-pool-f7062829-bg6j   <none>           <none>
+
+# gcloud compute instances list
+NAME                                  ZONE               MACHINE_TYPE   PREEMPTIBLE  INTERNAL_IP  EXTERNAL_IP     STATUS
+gke-parcs-default-pool-f7062829-bg6j  europe-central2-a  e2-standard-2               10.186.0.3   34.116.213.195  RUNNING
+gke-parcs-workers-18a616b2-899p       europe-central2-a  e2-standard-2               10.186.0.5   34.116.137.187  RUNNING
+gke-parcs-workers-18a616b2-cjlv       europe-central2-a  e2-standard-2               10.186.0.4   34.118.123.204  RUNNING
+gke-parcs-workers-18a616b2-lgfn       europe-central2-a  e2-standard-2               10.186.0.6   34.158.234.188  RUNNING
+gke-parcs-workers-18a616b2-pk74       europe-central2-a  e2-standard-2               10.186.0.7   34.116.135.66   RUNNING

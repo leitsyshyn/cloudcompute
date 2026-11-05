@@ -1,0 +1,298 @@
+{
+  "Method": "parcs",
+  "InputPath": "/var/lib/storage/datasets/natural_100mb.txt",
+  "InputBytes": 104857930,
+  "Points": 4,
+  "SetupMs": 12.2815,
+  "FinalizeMs": 0.0003,
+  "Rounds": [
+    {
+      "Round": 0,
+      "Warmup": true,
+      "Points": 4,
+      "DispatchAndMapMs": 539.0063,
+      "MergeMs": 0.03589999999996962,
+      "TotalMs": 539.0422,
+      "Words": 13792415,
+      "UniqueWords": 96,
+      "Workers": [
+        {
+          "Worker": "parcs-daemon-5f7d6df8db-l96mh",
+          "Begin": 0,
+          "End": 26214483,
+          "BytesRead": 27262976,
+          "Words": 3447677,
+          "UniqueWords": 96,
+          "ScanMs": 413.8323
+        },
+        {
+          "Worker": "parcs-daemon-5f7d6df8db-stqkz",
+          "Begin": 26214483,
+          "End": 52428966,
+          "BytesRead": 27262976,
+          "Words": 3447823,
+          "UniqueWords": 96,
+          "ScanMs": 384.7761
+        },
+        {
+          "Worker": "parcs-daemon-5f7d6df8db-f75kh",
+          "Begin": 52428966,
+          "End": 78643448,
+          "BytesRead": 27262976,
+          "Words": 3448673,
+          "UniqueWords": 96,
+          "ScanMs": 397.4378
+        },
+        {
+          "Worker": "parcs-daemon-5f7d6df8db-x6czp",
+          "Begin": 78643448,
+          "End": 104857930,
+          "BytesRead": 26214482,
+          "Words": 3448242,
+          "UniqueWords": 96,
+          "ScanMs": 393.1775
+        }
+      ]
+    },
+    {
+      "Round": 1,
+      "Warmup": false,
+      "Points": 4,
+      "DispatchAndMapMs": 415.6233,
+      "MergeMs": 0.04060000000004038,
+      "TotalMs": 415.6639,
+      "Words": 13792415,
+      "UniqueWords": 96,
+      "Workers": [
+        {
+          "Worker": "parcs-daemon-5f7d6df8db-l96mh",
+          "Begin": 0,
+          "End": 26214483,
+          "BytesRead": 27262976,
+          "Words": 3447677,
+          "UniqueWords": 96,
+          "ScanMs": 382.9844
+        },
+        {
+          "Worker": "parcs-daemon-5f7d6df8db-stqkz",
+          "Begin": 26214483,
+          "End": 52428966,
+          "BytesRead": 27262976,
+          "Words": 3447823,
+          "UniqueWords": 96,
+          "ScanMs": 368.7961
+        },
+        {
+          "Worker": "parcs-daemon-5f7d6df8db-f75kh",
+          "Begin": 52428966,
+          "End": 78643448,
+          "BytesRead": 27262976,
+          "Words": 3448673,
+          "UniqueWords": 96,
+          "ScanMs": 378.2221
+        },
+        {
+          "Worker": "parcs-daemon-5f7d6df8db-x6czp",
+          "Begin": 78643448,
+          "End": 104857930,
+          "BytesRead": 26214482,
+          "Words": 3448242,
+          "UniqueWords": 96,
+          "ScanMs": 413.8046
+        }
+      ]
+    },
+    {
+      "Round": 2,
+      "Warmup": false,
+      "Points": 4,
+      "DispatchAndMapMs": 406.0188,
+      "MergeMs": 0.042899999999974625,
+      "TotalMs": 406.0617,
+      "Words": 13792415,
+      "UniqueWords": 96,
+      "Workers": [
+        {
+          "Worker": "parcs-daemon-5f7d6df8db-l96mh",
+          "Begin": 0,
+          "End": 26214483,
+          "BytesRead": 27262976,
+          "Words": 3447677,
+          "UniqueWords": 96,
+          "ScanMs": 384.7395
+        },
+        {
+          "Worker": "parcs-daemon-5f7d6df8db-stqkz",
+          "Begin": 26214483,
+          "End": 52428966,
+          "BytesRead": 27262976,
+          "Words": 3447823,
+          "UniqueWords": 96,
+          "ScanMs": 384.9441
+        },
+        {
+          "Worker": "parcs-daemon-5f7d6df8db-f75kh",
+          "Begin": 52428966,
+          "End": 78643448,
+          "BytesRead": 27262976,
+          "Words": 3448673,
+          "UniqueWords": 96,
+          "ScanMs": 378.5214
+        },
+        {
+          "Worker": "parcs-daemon-5f7d6df8db-x6czp",
+          "Begin": 78643448,
+          "End": 104857930,
+          "BytesRead": 26214482,
+          "Words": 3448242,
+          "UniqueWords": 96,
+          "ScanMs": 404.2296
+        }
+      ]
+    },
+    {
+      "Round": 3,
+      "Warmup": false,
+      "Points": 4,
+      "DispatchAndMapMs": 426.8888,
+      "MergeMs": 0.03519999999997481,
+      "TotalMs": 426.924,
+      "Words": 13792415,
+      "UniqueWords": 96,
+      "Workers": [
+        {
+          "Worker": "parcs-daemon-5f7d6df8db-l96mh",
+          "Begin": 0,
+          "End": 26214483,
+          "BytesRead": 27262976,
+          "Words": 3447677,
+          "UniqueWords": 96,
+          "ScanMs": 357.5806
+        },
+        {
+          "Worker": "parcs-daemon-5f7d6df8db-stqkz",
+          "Begin": 26214483,
+          "End": 52428966,
+          "BytesRead": 27262976,
+          "Words": 3447823,
+          "UniqueWords": 96,
+          "ScanMs": 394.2886
+        },
+        {
+          "Worker": "parcs-daemon-5f7d6df8db-f75kh",
+          "Begin": 52428966,
+          "End": 78643448,
+          "BytesRead": 27262976,
+          "Words": 3448673,
+          "UniqueWords": 96,
+          "ScanMs": 372.5239
+        },
+        {
+          "Worker": "parcs-daemon-5f7d6df8db-x6czp",
+          "Begin": 78643448,
+          "End": 104857930,
+          "BytesRead": 26214482,
+          "Words": 3448242,
+          "UniqueWords": 96,
+          "ScanMs": 425.7813
+        }
+      ]
+    },
+    {
+      "Round": 4,
+      "Warmup": false,
+      "Points": 4,
+      "DispatchAndMapMs": 424.6614,
+      "MergeMs": 0.030300000000011096,
+      "TotalMs": 424.6917,
+      "Words": 13792415,
+      "UniqueWords": 96,
+      "Workers": [
+        {
+          "Worker": "parcs-daemon-5f7d6df8db-l96mh",
+          "Begin": 0,
+          "End": 26214483,
+          "BytesRead": 27262976,
+          "Words": 3447677,
+          "UniqueWords": 96,
+          "ScanMs": 359.1497
+        },
+        {
+          "Worker": "parcs-daemon-5f7d6df8db-stqkz",
+          "Begin": 26214483,
+          "End": 52428966,
+          "BytesRead": 27262976,
+          "Words": 3447823,
+          "UniqueWords": 96,
+          "ScanMs": 387.6606
+        },
+        {
+          "Worker": "parcs-daemon-5f7d6df8db-f75kh",
+          "Begin": 52428966,
+          "End": 78643448,
+          "BytesRead": 27262976,
+          "Words": 3448673,
+          "UniqueWords": 96,
+          "ScanMs": 382.6905
+        },
+        {
+          "Worker": "parcs-daemon-5f7d6df8db-x6czp",
+          "Begin": 78643448,
+          "End": 104857930,
+          "BytesRead": 26214482,
+          "Words": 3448242,
+          "UniqueWords": 96,
+          "ScanMs": 422.7739
+        }
+      ]
+    },
+    {
+      "Round": 5,
+      "Warmup": false,
+      "Points": 4,
+      "DispatchAndMapMs": 392.3415,
+      "MergeMs": 0.026999999999986812,
+      "TotalMs": 392.3685,
+      "Words": 13792415,
+      "UniqueWords": 96,
+      "Workers": [
+        {
+          "Worker": "parcs-daemon-5f7d6df8db-l96mh",
+          "Begin": 0,
+          "End": 26214483,
+          "BytesRead": 27262976,
+          "Words": 3447677,
+          "UniqueWords": 96,
+          "ScanMs": 380.0452
+        },
+        {
+          "Worker": "parcs-daemon-5f7d6df8db-stqkz",
+          "Begin": 26214483,
+          "End": 52428966,
+          "BytesRead": 27262976,
+          "Words": 3447823,
+          "UniqueWords": 96,
+          "ScanMs": 370.224
+        },
+        {
+          "Worker": "parcs-daemon-5f7d6df8db-f75kh",
+          "Begin": 52428966,
+          "End": 78643448,
+          "BytesRead": 27262976,
+          "Words": 3448673,
+          "UniqueWords": 96,
+          "ScanMs": 391.3368
+        },
+        {
+          "Worker": "parcs-daemon-5f7d6df8db-x6czp",
+          "Begin": 78643448,
+          "End": 104857930,
+          "BytesRead": 26214482,
+          "Words": 3448242,
+          "UniqueWords": 96,
+          "ScanMs": 379.9364
+        }
+      ]
+    }
+  ]
+}

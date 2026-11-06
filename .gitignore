@@ -8,7 +8,4 @@ obj/
 __pycache__/
 *.pyc
 
-# report build intermediates (the PDFs are committed)
-report/build/
-
 .DS_Store

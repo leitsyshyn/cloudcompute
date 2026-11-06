@@ -14,8 +14,7 @@ four worker nodes, compared with a sequential baseline that runs the same counti
   - It then runs one warmup round and five measured rounds over the same points.
   - Point start-up is reported separately from the per-round time.
 
-Report: [report/Звіт_ЛР1_Лейцишин.pdf](report/Звіт_ЛР1_Лейцишин.pdf) (short version:
-[report/Звіт_ЛР1_Лейцишин_короткий.pdf](report/Звіт_ЛР1_Лейцишин_короткий.pdf)).
+Report: [report/Звіт_ЛР1_Лейцишин.pdf](report/Звіт_ЛР1_Лейцишин.pdf).
 
 ## Layout
 
@@ -30,7 +29,7 @@ deploy/base, deploy/gcp          Kubernetes manifests (kustomize), NFS-Ganesha H
 deploy/jobs/                     dataset generation and sequential baseline Jobs
 scripts/datagen.py               deterministic dataset generator
 results/gcp/                     measurements: raw and summary CSV, per-job reports, figures
-report/                          report sources (Markdown -> Typst) and PDFs
+report/                          the report (PDF) and the cluster screenshots
 ```
 
 ## parcs8 sources
@@ -51,7 +50,7 @@ is packed from `third_party/parcs8/src/Parcs.Net` because nuget.org does not hav
 
 The full command sequence (project, images, cluster with master + worker-1..4, NFS storage,
 parcs8, datasets, job submission through the REST API, sequential baseline, teardown) is in
-section 7.2 of the report.
+section 6 of the report.
 
 ## Problems found in upstream parcs8 and how they are fixed
 
